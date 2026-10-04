@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PATBHE HOOLIGANS TICKET - Official Matchday Portal</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#0a0c10',
+              900: '#0f1115',
+              800: '#181b22',
+              700: '#262a36',
+              600: '#383e50',
+            },
+            gold: {
+              300: '#fde047',
+              400: '#facc15',
+              500: '#d4af37',
+              600: '#ca8a04',
+              700: '#a16207',
+            },
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            cinzel: ['Cinzel', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0a0c10;
+      color: #f1f5f9;
+    }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+
+    .bg-gold-gradient {
+      background: linear-gradient(135deg, #facc15 0%, #d4af37 50%, #854d0e 100%);
+    }
+
+    .text-gold-gradient {
+      background: linear-gradient(135deg, #fffbeb 0%, #facc15 50%, #d4af37 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-glow {
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+    }
+
+    .border-gold-glow {
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+    }
+
+    /* Print styles for generating official E-Tickets */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-eticket, #printable-eticket *, #printable-summary, #printable-summary * { visibility: visible; }
+      #printable-eticket, #printable-summary {
+        position: absolute; left: 0; top: 0; width: 100%; color: #000 !important; background: #fff !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-obsidian-950 text-slate-100 min-h-screen flex flex-col selection:bg-gold-500 selection:text-black">
+
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <header class="sticky top-0 z-40 bg-obsidian-900/95 backdrop-blur-md border-b border-gold-500/20 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchPortal('buyer')">
+          <div class="w-11 h-11 rounded-xl bg-gold-gradient p-0.5 shadow-lg shadow-gold-500/20 flex items-center justify-center shrink-0">
+            <div class="w-full h-full bg-obsidian-950 rounded-[10px] flex items-center justify-center">
+              <i data-lucide="shield" class="w-6 h-6 text-gold-400"></i>
+            </div>
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-black font-cinzel tracking-wider text-gold-gradient">
+              PATBHE HOOLIGANS
+            </h1>
+            <p class="text-[10px] tracking-widest text-gold-400 uppercase font-semibold">Matchday Ticketing System</p>
+          </div>
+        </div>
+
+        <!-- Navigation Switcher & Guide Button -->
+        <div class="flex items-center gap-3">
+          <nav class="flex items-center gap-1.5 bg-obsidian-950 p-1.5 rounded-2xl border border-obsidian-800">
+            <button 
+              id="nav-buyer" 
+              onclick="switchPortal('buyer')" 
+              class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gold-500 text-black shadow-md shadow-gold-500/20">
+              <i data-lucide="globe" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">🌐 Portal</span> Pembeli
+            </button>
+            
+            <button 
+              id="nav-admin" 
+              onclick="openAdminAccessModal()" 
+              class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-gold-400 hover:bg-obsidian-800">
+              <i data-lucide="settings" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">⚙️ Dashboard</span> Admin
+              <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" title="Realtime Sync Aktif"></span>
+            </button>
+          </nav>
+
+          <button 
+            onclick="openGuideModal()" 
+            class="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-slate-300 text-xs font-semibold border border-obsidian-700 transition"
+            title="Panduan Pemisahan Kode File">
+            <i data-lucide="code" class="w-4 h-4 text-gold-400"></i>
+            <span>Panduan File</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- =========================================================================
+         PORTAL 1: WEBSITE PEMBELI (BUYER PORTAL)
+         ========================================================================= -->
+    <div id="portal-buyer" class="space-y-10">
+
+      <!-- Match Banner Card -->
+      <section class="relative rounded-3xl overflow-hidden bg-obsidian-900 border-gold-glow">
+        <div class="relative h-64 sm:h-80 md:h-96 w-full">
+          <img 
+            id="buyer-event-banner"
+            src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80" 
+            alt="Matchday Banner" 
+            class="w-full h-full object-cover brightness-40"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-obsidian-950 via-obsidian-950/60 to-transparent"></div>
+
+          <div class="absolute inset-0 p-6 sm:p-10 flex flex-col justify-end">
+            <div class="max-w-3xl space-y-3">
+              <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-extrabold bg-gold-500/20 text-gold-400 border border-gold-500/40 backdrop-blur-md">
+                <i data-lucide="flame" class="w-4 h-4 text-gold-400"></i> BIG MATCHDAY - TRIBUN HOOLIGANS PATBHE
+              </div>
+              
+              <h2 id="buyer-match-title" class="text-2xl sm:text-4xl md:text-5xl font-black font-cinzel text-white leading-tight">
+                PATBHE VS TELADAN
+              </h2>
+
+              <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-300 font-medium">
+                <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4 text-gold-400"></i> <span id="buyer-match-date">Sabtu, 24 Oktober 2026</span></span>
+                <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-gold-400"></i> <span id="buyer-match-time">Kick-Off 15:30 WIB</span></span>
+                <span class="flex items-center gap-1.5"><i data-lucide="map-pin" class="w-4 h-4 text-gold-400"></i> <span id="buyer-match-location">GOR UNY Yogyakarta</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Banner Strip -->
+        <div class="bg-obsidian-800/90 border-t border-obsidian-700 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 shrink-0">
+              <i data-lucide="ticket" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-400">Harga Tiket Tribun Suporter</p>
+              <p id="buyer-ticket-price-display" class="text-xl font-extrabold text-gold-400 font-mono">Rp 35.000 / Tiket</p>
+            </div>
+          </div>
+          <div class="text-xs text-slate-400 bg-obsidian-950 px-4 py-2 rounded-xl border border-obsidian-800 flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+            <span>Pintu Masuk Khusus Suporter Patbhe</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="max-w-3xl mx-auto">
+        <div class="bg-obsidian-900 border border-obsidian-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          
+          <div class="border-b border-obsidian-800 pb-4">
+            <h3 class="text-xl font-black font-cinzel text-gold-gradient flex items-center gap-2">
+              <i data-lucide="edit-3" class="w-5 h-5 text-gold-400"></i> FORM PEMESANAN TIKET MATCH
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Isi data diri Anda dengan teliti sesuai kelas dan angkatan.</p>
+          </div>
+
+          <form id="form-buy-ticket" onsubmit="handleTicketBooking(event)" class="space-y-6">
+            
+            <!-- Nama Lengkap -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Nama Lengkap Pembeli *
+              </label>
+              <div class="relative">
+                <i data-lucide="user" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <input 
+                  type="text" 
+                  id="buyer-input-name" 
+                  required 
+                  placeholder="Contoh: Aditya Pratama"
+                  class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-gold-500 transition"
+                />
+              </div>
+            </div>
+
+            <!-- Status Angkatan Selector -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Status Angkatan *
+              </label>
+              <div class="grid grid-cols-3 gap-3">
+                <label class="relative cursor-pointer">
+                  <input type="radio" name="input_angkatan" value="27" onchange="handleAngkatanChange('27')" class="peer sr-only" />
+                  <div class="p-3 text-center rounded-xl border border-obsidian-700 bg-obsidian-950 peer-checked:border-gold-500 peer-checked:bg-gold-500/10 peer-checked:text-gold-400 hover:border-slate-600 transition">
+                    <span class="block text-sm font-extrabold">Angkatan 27</span>
+                  </div>
+                </label>
+
+                <label class="relative cursor-pointer">
+                  <input type="radio" name="input_angkatan" value="28" onchange="handleAngkatanChange('28')" class="peer sr-only" />
+                  <div class="p-3 text-center rounded-xl border border-obsidian-700 bg-obsidian-950 peer-checked:border-gold-500 peer-checked:bg-gold-500/10 peer-checked:text-gold-400 hover:border-slate-600 transition">
+                    <span class="block text-sm font-extrabold">Angkatan 28</span>
+                  </div>
+                </label>
+
+                <label class="relative cursor-pointer">
+                  <input type="radio" name="input_angkatan" value="29" onchange="handleAngkatanChange('29')" checked class="peer sr-only" />
+                  <div class="p-3 text-center rounded-xl border border-obsidian-700 bg-obsidian-950 peer-checked:border-gold-500 peer-checked:bg-gold-500/10 peer-checked:text-gold-400 hover:border-slate-600 transition">
+                    <span class="block text-sm font-extrabold">Angkatan 29</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 flex justify-between">
+                <span>Pilihan Kelas *</span>
+                <span id="kelas-hint-text" class="text-[10px] text-gold-400 lowercase font-normal">Memuat kelas...</span>
+              </label>
+              <div class="relative">
+                <i data-lucide="school" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"></i>
+                <select 
+                  id="buyer-input-kelas" 
+                  required
+                  class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-gold-500 transition appearance-none">
+                  <!-- JS Populated Options -->
+                </select>
+                <i data-lucide="chevron-down" class="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <!-- Payment Method Radio Choices -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+                Pilih Metode Pembayaran *
+              </label>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <label class="relative cursor-pointer">
+                  <input type="radio" name="input_payment" value="QRIS" onchange="togglePaymentTab('QRIS')" checked class="peer sr-only" />
+                  <div class="p-4 rounded-2xl border border-obsidian-700 bg-obsidian-950 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 flex items-center gap-3 transition">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">QR</div>
+                    <div>
+                      <p class="text-sm font-bold text-white">QRIS Barcode</p>
+                      <p class="text-[10px] text-slate-400">Scan Instant & Lunas</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label class="relative cursor-pointer">
+                  <input type="radio" name="input_payment" value="CASH" onchange="togglePaymentTab('CASH')" class="peer sr-only" />
+                  <div class="p-4 rounded-2xl border border-obsidian-700 bg-obsidian-950 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 flex items-center gap-3 transition">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">💵</div>
+                    <div>
+                      <p class="text-sm font-bold text-white">Bayar Cash</p>
+                      <p class="text-[10px] text-slate-400">Bayar di Panitia Match</p>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div id="panel-qris-details" class="bg-obsidian-950 border border-emerald-500/30 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between border-b border-obsidian-800 pb-3">
+                <span class="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                  <i data-lucide="qr-code" class="w-4 h-4"></i> Scan QRIS Resmi Patbhe
+                </span>
+                <span class="text-[10px] bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full font-bold">LUNAS OTOMATIS</span>
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center gap-6 justify-center">
+                <div class="p-3 bg-white rounded-2xl shadow-xl shrink-0 border-2 border-emerald-500">
+                  <img 
+                    id="qris-barcode-img" 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PATBHE-HOOLIGANS-OFFICIAL-QRIS" 
+                    alt="Barcode QRIS Official" 
+                    class="w-44 h-44 object-contain"
+                  />
+                </div>
+
+                <div class="text-xs space-y-2 text-slate-300 max-w-xs">
+                  <p class="font-bold text-white">Petunjuk Pembayaran QRIS:</p>
+                  <ol class="list-decimal pl-4 space-y-1 text-slate-400">
+                    <li>Gunakan Gopay, OVO, DANA, ShopeePay, atau Mobile Banking.</li>
+                    <li>Scan QR Code di samping.</li>
+                    <li>Transfer persis nominal: <strong id="qris-nominal-text" class="text-emerald-400">Rp 35.000</strong>.</li>
+                    <li>Klik tombol konfirmasi di bawah ini.</li>
+                  </ol>
+                  <div class="pt-2 flex items-center gap-2 text-amber-400 text-[11px] font-mono">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                    <span>Selesaikan transaksi sebelum session habis.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="panel-cash-details" class="hidden bg-obsidian-950 border border-amber-500/30 rounded-2xl p-5 space-y-3">
+              <div class="flex items-center gap-2 text-xs font-bold text-amber-400">
+                <i data-lucide="info" class="w-4 h-4"></i> Petunjuk Pembayaran Cash (Tunai)
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed">
+                Pesanan Anda akan masuk ke sistem Admin dengan status <span class="text-amber-400 font-bold">Belum Bayar (Cash Pending)</span>. 
+                Silakan lakukan pembayaran tunai ke Panitia Match. Admin akan mencentang nama Anda sehingga E-Tiket menjadi Lunas!
+              </p>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              id="btn-submit-order" 
+              class="w-full py-4 rounded-2xl bg-gold-gradient hover:opacity-95 text-black font-extrabold text-base shadow-xl shadow-gold-500/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              <span id="btn-submit-text">Konfirmasi Pembayaran QRIS & Terbitkan Tiket</span>
+            </button>
+
+          </form>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- =========================================================================
+         PORTAL 2: DASHBOARD ADMIN (ADMIN PORTAL)
+         ========================================================================= -->
+    <div id="portal-admin" class="hidden space-y-8">
+      
+      <!-- Top Admin Banner -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-obsidian-900 border border-obsidian-800 p-6 rounded-3xl">
+        <div>
+          <div class="flex items-center gap-2 text-gold-400 font-bold text-xs uppercase tracking-wider">
+            <i data-lucide="shield-check" class="w-4 h-4"></i> Official Admin Pemegang Website
+          </div>
+          <h2 class="text-2xl font-black font-cinzel text-white mt-1">DASHBOARD ADMIN PATBHE HOOLIGANS</h2>
+          <p class="text-xs text-slate-400">Kelola pesanan, centang pelunasan cash, ganti barcode QRIS, dan rekap data angkatan.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <button onclick="exportDataToCSV()" class="px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-xs font-bold text-slate-200 border border-obsidian-700 flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i> Ekspor CSV
+          </button>
+          <button onclick="window.print()" class="px-4 py-2.5 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-xs font-bold text-slate-200 border border-obsidian-700 flex items-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Cetak Rekap
+          </button>
+          <button onclick="switchPortal('buyer')" class="px-4 py-2.5 rounded-xl bg-gold-500 text-black font-bold text-xs flex items-center gap-2">
+            <i data-lucide="globe" class="w-4 h-4"></i> Website Pembeli
+          </button>
+        </div>
+      </div>
+
+      <!-- Executive Metric Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-obsidian-900 border border-obsidian-800 p-4 rounded-2xl">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Tiket Terjual</span>
+          <p id="stat-total-tickets" class="text-2xl font-black text-white mt-1 font-mono">0</p>
+          <span class="text-[10px] text-gold-400 font-medium">Tiket Terdaftar</span>
+        </div>
+
+        <div class="bg-obsidian-900 border border-obsidian-800 p-4 rounded-2xl">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Total Pendapatan</span>
+          <p id="stat-total-revenue" class="text-xl font-black text-emerald-400 mt-1 font-mono">Rp 0</p>
+          <span class="text-[10px] text-emerald-500 font-medium">Status Lunas</span>
+        </div>
+
+        <div class="bg-obsidian-900 border border-obsidian-800 p-4 rounded-2xl">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Cash Pending</span>
+          <p id="stat-cash-pending" class="text-2xl font-black text-amber-400 mt-1 font-mono">0</p>
+          <span class="text-[10px] text-amber-500 font-medium">Belum Bayar Cash</span>
+        </div>
+
+        <div class="bg-obsidian-900 border border-obsidian-800 p-4 rounded-2xl">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Cash Lunas</span>
+          <p id="stat-cash-paid" class="text-2xl font-black text-emerald-400 mt-1 font-mono">0</p>
+          <span class="text-[10px] text-emerald-500 font-medium">Sudah Dicentang</span>
+        </div>
+
+        <div class="col-span-2 md:col-span-1 bg-obsidian-900 border border-obsidian-800 p-4 rounded-2xl">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">QRIS Lunas</span>
+          <p id="stat-qris-paid" class="text-2xl font-black text-cyan-400 mt-1 font-mono">0</p>
+          <span class="text-[10px] text-cyan-500 font-medium">Lunas Otomatis</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 border-b border-obsidian-800 pb-2 overflow-x-auto">
+        <button id="tab-btn-cash-pending" onclick="switchAdminTab('cash-pending')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-gold-500 text-black shadow-md flex items-center gap-2 shrink-0">
+          <i data-lucide="clock" class="w-4 h-4"></i> 🔴 Belum Bayar (Cash Pending)
+        </button>
+
+        <button id="tab-btn-cash-paid" onclick="switchAdminTab('cash-paid')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-obsidian-900 text-slate-400 hover:text-white flex items-center gap-2 shrink-0">
+          <i data-lucide="check-circle" class="w-4 h-4"></i> 🟢 Sudah Bayar (Lunas)
+        </button>
+
+        <button id="tab-btn-analytics" onclick="switchAdminTab('analytics')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-obsidian-900 text-slate-400 hover:text-white flex items-center gap-2 shrink-0">
+          <i data-lucide="layers" class="w-4 h-4"></i> Data Akhir & Grouping Kelas
+        </button>
+
+        <button id="tab-btn-settings" onclick="switchAdminTab('settings')" class="px-5 py-2.5 rounded-xl text-xs font-bold transition bg-obsidian-900 text-slate-400 hover:text-white flex items-center gap-2 shrink-0">
+          <i data-lucide="sliders" class="w-4 h-4"></i> Edit Match & Upload QRIS
+        </button>
+      </div>
+
+      <!-- TAB 1: CASH PENDING TABLE WITH CHECKLIST -->
+      <div id="admin-tab-cash-pending" class="space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-obsidian-900 p-4 rounded-2xl border border-obsidian-800">
+          <div>
+            <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2">
+              <i data-lucide="alert-circle" class="w-4 h-4"></i> Checklist Pembayaran Cash (Belum Bayar)
+            </h3>
+            <p class="text-xs text-slate-400">Klik tombol centang jika pembeli menyerahkan uang tunai.</p>
+          </div>
+
+          <!-- Live Search Bar -->
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input 
+              type="text" 
+              id="search-pending-input" 
+              oninput="renderCashPendingTable()" 
+              placeholder="Cari nama, kelas, booking..." 
+              class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-gold-500"
+            />
+          </div>
+        </div>
+
+        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-obsidian-950 text-slate-400 uppercase font-bold border-b border-obsidian-800">
+                <tr>
+                  <th class="p-4">Aksi Centang Bayar</th>
+                  <th class="p-4">Kode Booking</th>
+                  <th class="p-4">Nama Pembeli</th>
+                  <th class="p-4">Kelas</th>
+                  <th class="p-4">Angkatan</th>
+                  <th class="p-4">Tanggal Pesan</th>
+                  <th class="p-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-pending-tbody" class="divide-y divide-obsidian-800 text-slate-200">
+                <!-- JS Populated Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SUDAH BAYAR TABLE -->
+      <div id="admin-tab-cash-paid" class="hidden space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-obsidian-900 p-4 rounded-2xl border border-obsidian-800">
+          <div>
+            <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Daftar Pembeli Lunas (Cash & QRIS)
+            </h3>
+            <p class="text-xs text-slate-400">Daftar seluruh pembeli yang telah terkonfirmasi LUNAS.</p>
+          </div>
+
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"></i>
+            <input 
+              type="text" 
+              id="search-paid-input" 
+              oninput="renderCashPaidTable()" 
+              placeholder="Cari nama, kelas, booking..." 
+              class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-gold-500"
+            />
+          </div>
+        </div>
+
+        <div class="bg-obsidian-900 border border-obsidian-800 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-obsidian-950 text-slate-400 uppercase font-bold border-b border-obsidian-800">
+                <tr>
+                  <th class="p-4">Kode Booking</th>
+                  <th class="p-4">Nama Pembeli</th>
+                  <th class="p-4">Kelas</th>
+                  <th class="p-4">Angkatan</th>
+                  <th class="p-4">Metode Bayar</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="table-paid-tbody" class="divide-y divide-obsidian-800 text-slate-200">
+                <!-- JS Populated Content -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: DATA AKHIR & GROUPING KELAS -->
+      <div id="admin-tab-analytics" class="hidden space-y-8">
+        
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-obsidian-900 p-6 rounded-3xl border border-obsidian-800">
+          <div>
+            <h3 class="text-base font-bold font-cinzel text-gold-400 flex items-center gap-2">
+              <i data-lucide="boxes" class="w-5 h-5"></i> REKAP DATA AKHIR PEMESAN PER KELAS & ANGKATAN
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">Format pengelompokan rapi: (Nama) - (Kelas) - (Angkatan)</p>
+          </div>
+
+          <button onclick="copyFormattedWhatsAppText()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg flex items-center gap-2 transition">
+            <i data-lucide="copy" class="w-4 h-4"></i> Salin Format WhatsApp
+          </button>
+        </div>
+
+        <div id="printable-summary" class="space-y-8">
+          
+          <!-- Angkatan 29 -->
+          <div class="bg-obsidian-900 border border-obsidian-800 rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-obsidian-800 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-gold-500/20 text-gold-400 font-extrabold flex items-center justify-center text-sm">29</span>
+                <div>
+                  <h4 class="text-lg font-bold text-white">ANGKATAN 29</h4>
+                  <p class="text-xs text-slate-400">Kelas E1-E8 & F1-F8</p>
+                </div>
+              </div>
+              <span id="badge-count-ang-29" class="px-3 py-1 rounded-full text-xs font-bold bg-obsidian-800 text-gold-400 border border-gold-500/30">0 Tiket</span>
+            </div>
+            <div id="group-container-29" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          </div>
+
+          <!-- Angkatan 28 -->
+          <div class="bg-obsidian-900 border border-obsidian-800 rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-obsidian-800 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm">28</span>
+                <div>
+                  <h4 class="text-lg font-bold text-white">ANGKATAN 28</h4>
+                  <p class="text-xs text-slate-400">Kelas F1-F8</p>
+                </div>
+              </div>
+              <span id="badge-count-ang-28" class="px-3 py-1 rounded-full text-xs font-bold bg-obsidian-800 text-emerald-400 border border-emerald-500/30">0 Tiket</span>
+            </div>
+            <div id="group-container-28" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          </div>
+
+          <!-- Angkatan 27 -->
+          <div class="bg-obsidian-900 border border-obsidian-800 rounded-3xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-obsidian-800 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 font-extrabold flex items-center justify-center text-sm">27</span>
+                <div>
+                  <h4 class="text-lg font-bold text-white">ANGKATAN 27</h4>
+                  <p class="text-xs text-slate-400">Kelas F1-F8</p>
+                </div>
+              </div>
+              <span id="badge-count-ang-27" class="px-3 py-1 rounded-full text-xs font-bold bg-obsidian-800 text-cyan-400 border border-cyan-500/30">0 Tiket</span>
+            </div>
+            <div id="group-container-27" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- TAB 4: EDIT MATCH & UPLOAD QRIS -->
+      <div id="admin-tab-settings" class="hidden max-w-2xl">
+        <div class="bg-obsidian-900 border border-obsidian-800 rounded-3xl p-6 sm:p-8 space-y-6">
+          <h3 class="text-base font-bold font-cinzel text-gold-400 flex items-center gap-2">
+            <i data-lucide="edit-3" class="w-5 h-5"></i> EDIT PENGATURAN MATCH & UPLOAD QRIS
+          </h3>
+
+          <form onsubmit="saveEventSettings(event)" class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Nama Pertandingan / Match Event *</label>
+              <input type="text" id="setting-match-title" required class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100 focus:border-gold-500" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Tanggal Match *</label>
+                <input type="text" id="setting-match-date" required class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Jam Kick-off *</label>
+                <input type="text" id="setting-match-time" required class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Harga Tiket (Rp) *</label>
+                <input type="number" id="setting-ticket-price" required class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100" />
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 mb-1">Lokasi Match / Venue *</label>
+                <input type="text" id="setting-match-location" required class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100" />
+              </div>
+            </div>
+
+            <!-- Upload Custom File Foto QRIS -->
+            <div class="p-4 bg-obsidian-950 border border-obsidian-700 rounded-2xl space-y-3">
+              <label class="block font-bold text-gold-400">Ganti Barcode QRIS Pemegang Admin</label>
+              <p class="text-[10px] text-slate-400">Unggah foto gambar Barcode QRIS dari HP / Komputer Anda:</p>
+              
+              <input 
+                type="file" 
+                id="qris-file-input" 
+                accept="image/*" 
+                onchange="handleQRISFileUpload(event)"
+                class="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-extrabold file:bg-gold-500 file:text-black hover:file:bg-gold-400 cursor-pointer"
+              />
+
+              <div class="flex items-center gap-4 pt-2">
+                <span class="text-[10px] text-slate-400">Preview QRIS Saat Ini:</span>
+                <img id="setting-qris-preview" src="" alt="Preview QRIS" class="w-16 h-16 object-contain bg-white rounded-lg p-1 border border-gold-500" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">PIN Admin Baru</label>
+              <input type="text" id="setting-admin-pin" placeholder="Default: 1950" class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-3.5 py-2.5 text-slate-100" />
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-gold-500 text-black font-extrabold text-sm shadow-md hover:bg-gold-400 transition">
+              Simpan Semua Perubahan Settings
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL: PIN ADMIN PROTECTION -->
+  <div id="modal-admin-pin" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-gold-500/30 rounded-3xl p-6 sm:p-8 max-w-sm w-full space-y-5 text-center shadow-2xl relative">
+      <button onclick="closeAdminPinModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="w-14 h-14 rounded-2xl bg-gold-500/10 border border-gold-500/30 text-gold-400 flex items-center justify-center mx-auto">
+        <i data-lucide="lock" class="w-7 h-7"></i>
+      </div>
+
+      <div>
+        <h3 class="text-lg font-black font-cinzel text-white">AKSES DASHBOARD ADMIN</h3>
+        <p class="text-xs text-slate-400 mt-1">Masukkan PIN Keamanan Admin (Default PIN: <strong class="text-gold-400">1950</strong>)</p>
+      </div>
+
+      <form onsubmit="verifyAdminPIN(event)" class="space-y-4">
+        <input 
+          type="password" 
+          id="admin-pin-input" 
+          required 
+          maxlength="8" 
+          placeholder="••••" 
+          class="w-full bg-obsidian-950 border border-obsidian-700 rounded-xl px-4 py-3 text-center text-xl tracking-widest font-mono text-white focus:outline-none focus:border-gold-500"
+        />
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-gold-500 text-black font-extrabold text-sm">
+          Masuk Dashboard Admin
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DIGITAL E-TICKET PASS -->
+  <div id="modal-eticket" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-obsidian-900 border border-gold-500/40 rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl relative my-auto">
+      
+      <div class="bg-obsidian-950 px-6 py-4 border-b border-obsidian-800 flex items-center justify-between no-print">
+        <div class="flex items-center gap-2">
+          <i data-lucide="ticket" class="w-5 h-5 text-emerald-400"></i>
+          <span class="font-bold text-sm text-white font-cinzel">E-TIKET PASS MATCHDAY OFFICIAL</span>
+        </div>
+        <button onclick="closeETicketModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="printable-eticket" class="p-6 space-y-6">
+        <div class="border border-gold-500/30 rounded-2xl overflow-hidden bg-obsidian-950 shadow-xl">
+          
+          <div class="bg-gold-gradient p-5 flex items-center justify-between text-black">
+            <div>
+              <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-black/20 text-black uppercase tracking-wider">PATBHE HOOLIGANS MATCH PASS</span>
+              <h3 id="ticket-pass-match" class="text-lg font-black font-cinzel leading-tight mt-1">PATBHE VS TELADAN</h3>
+              <p id="ticket-pass-date" class="text-xs font-semibold mt-0.5">Sabtu, 24 Oktober 2026</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] font-black uppercase block">KODE BOOKING</span>
+              <span id="ticket-pass-code" class="text-base font-mono font-black tracking-wider">PTH-XXXXXX</span>
+            </div>
+          </div>
+
+          <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+            <div class="sm:col-span-2 space-y-2 text-xs">
+              <div>
+                <span class="text-[10px] text-slate-400 block uppercase">NAMA PEMBELI</span>
+                <span id="ticket-pass-name" class="font-extrabold text-white text-sm">NAMA PEMESAN</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <span class="text-[10px] text-slate-400 block uppercase">ANGKATAN</span>
+                  <span id="ticket-pass-angkatan" class="font-bold text-gold-400">Angkatan 29</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-slate-400 block uppercase">KELAS</span>
+                  <span id="ticket-pass-kelas" class="font-bold text-gold-400">29-E1</span>
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-400 block uppercase">STATUS BAYAR</span>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <span id="ticket-pass-payment" class="font-mono text-slate-200">QRIS</span>
+                  <span id="ticket-pass-status-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400">SUDAH BAYAR</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Simulated SVG QR Code -->
+            <div class="flex flex-col items-center justify-center border-t sm:border-t-0 sm:border-l border-obsidian-800 pt-3 sm:pt-0 sm:pl-3 text-center">
+              <div class="p-2 bg-white rounded-xl">
+                <svg id="ticket-qr-svg" class="w-24 h-24" viewBox="0 0 100 100" fill="none">
+                  <rect width="100" height="100" fill="white"/>
+                  <rect x="10" y="10" width="25" height="25" fill="black"/>
+                  <rect x="14" y="14" width="17" height="17" fill="white"/>
+                  <rect x="18" y="18" width="9" height="9" fill="black"/>
+                  <rect x="65" y="10" width="25" height="25" fill="black"/>
+                  <rect x="69" y="14" width="17" height="17" fill="white"/>
+                  <rect x="73" y="18" width="9" height="9" fill="black"/>
+                  <rect x="10" y="65" width="25" height="25" fill="black"/>
+                  <rect x="14" y="69" width="17" height="17" fill="white"/>
+                  <rect x="18" y="73" width="9" height="9" fill="black"/>
+                  <rect x="40" y="10" width="6" height="6" fill="black"/>
+                  <rect x="50" y="15" width="8" height="6" fill="black"/>
+                  <rect x="42" y="25" width="12" height="6" fill="black"/>
+                  <rect x="10" y="42" width="8" height="8" fill="black"/>
+                  <rect x="25" y="45" width="15" height="6" fill="black"/>
+                  <rect x="45" y="40" width="10" height="10" fill="black"/>
+                  <rect x="60" y="42" width="12" height="8" fill="black"/>
+                  <rect x="78" y="45" width="12" height="12" fill="black"/>
+                  <rect x="42" y="60" width="8" height="15" fill="black"/>
+                  <rect x="55" y="65" width="15" height="8" fill="black"/>
+                  <rect x="75" y="65" width="10" height="15" fill="black"/>
+                </svg>
+              </div>
+              <span class="text-[9px] text-slate-400 font-mono mt-1">PATBHE PASS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-obsidian-950 p-4 border-t border-obsidian-800 flex items-center justify-between no-print">
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-obsidian-800 hover:bg-obsidian-700 text-xs font-bold text-slate-200 flex items-center gap-2">
+          <i data-lucide="printer" class="w-4 h-4 text-gold-400"></i> Cetak E-Tiket
+        </button>
+        <button onclick="closeETicketModal()" class="px-4 py-2 rounded-xl bg-gold-500 text-black text-xs font-bold">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: CODE SEPARATION GUIDE -->
+  <div id="modal-guide" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-obsidian-700 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4">
+      <div class="flex items-center justify-between border-b border-obsidian-800 pb-3">
+        <h3 class="text-base font-bold text-gold-400 flex items-center gap-2">
+          <i data-lucide="file-code" class="w-5 h-5"></i> Panduan Pemisahan File Pembeli & Admin
+        </h3>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-300 space-y-3 leading-relaxed">
+        <p>Aplikasi ini dapat digunakan secara langsung dalam **1 file `index.html`** ini dengan berpindah via tombol header.</p>
+        <p>Jika Anda ingin memisahkannya menjadi 2 file HTML independen (`pembeli.html` dan `admin.html`):</p>
+        <ol class="list-decimal pl-4 space-y-1 text-slate-400">
+          <li>Salin seluruh kode file `index.html` ini ke `pembeli.html` dan `admin.html`.</li>
+          <li>Pada `pembeli.html`, setel panggilan awal di script menjadi `switchPortal('buyer')`.</li>
+          <li>Pada `admin.html`, setel panggilan awal menjadi `switchPortal('admin')`.</li>
+          <li>Kedua file akan **otomatis tersinkronisasi secara realtime** melalui `localStorage` dan `BroadcastChannel` browser!</li>
+        </ol>
+      </div>
+
+      <button onclick="closeGuideModal()" class="w-full py-2.5 rounded-xl bg-gold-500 text-black font-extrabold text-xs">
+        Saya Mengerti
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMATION PROMPT -->
+  <div id="modal-confirm" class="fixed inset-0 z-50 hidden bg-obsidian-950/90 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-obsidian-700 rounded-3xl p-6 max-w-sm w-full space-y-4 text-center">
+      <div class="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 id="confirm-title" class="text-base font-bold text-white">Konfirmasi Hapus</h3>
+      <p id="confirm-msg" class="text-xs text-slate-400">Apakah Anda yakin ingin menghapus data ini?</p>
+      <div class="flex items-center gap-3 pt-2">
+        <button id="btn-confirm-cancel" class="flex-1 py-2.5 rounded-xl bg-obsidian-800 text-xs font-bold text-slate-300">Batal</button>
+        <button id="btn-confirm-ok" class="flex-1 py-2.5 rounded-xl bg-rose-500 text-xs font-bold text-white">Hapus Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Default App Configuration
+    const DEFAULT_SETTINGS = {
+      matchTitle: 'PATBHE VS TELADAN',
+      matchDate: 'Sabtu, 24 Oktober 2026',
+      matchTime: 'Kick-Off 15:30 WIB',
+      matchLocation: 'GOR UNY Yogyakarta',
+      ticketPrice: 35000,
+      qrisImage: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PATBHE-HOOLIGANS-OFFICIAL-QRIS',
+      adminPin: '1950'
+    };
+
+    // Sample Initial Orders for Testing
+    const SEED_ORDERS = [
+      {
+        id: 'PTH-2026-A101',
+        name: 'Aditya Pratama',
+        angkatan: '29',
+        kelas: 'E1',
+        paymentMethod: 'QRIS',
+        paymentStatus: 'Sudah Bayar',
+        price: 35000,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'PTH-2026-B202',
+        name: 'Bagus Setiawan',
+        angkatan: '29',
+        kelas: 'E4',
+        paymentMethod: 'CASH',
+        paymentStatus: 'Belum Bayar',
+        price: 35000,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'PTH-2026-C303',
+        name: 'Rizky Ramadhan',
+        angkatan: '28',
+        kelas: 'F5',
+        paymentMethod: 'CASH',
+        paymentStatus: 'Belum Bayar',
+        price: 35000,
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'PTH-2026-D404',
+        name: 'Nabila Putri',
+        angkatan: '27',
+        kelas: 'F8',
+        paymentMethod: 'CASH',
+        paymentStatus: 'Sudah Bayar',
+        price: 35000,
+        createdAt: new Date().toISOString()
+      }
+    ];
+
+    let appSettings = {};
+    let ticketOrders = [];
+    let activePortal = 'buyer';
+    let currentPaymentMethod = 'QRIS';
+
+    // Realtime Broadcast Channel across tabs
+    const syncChannel = new BroadcastChannel('patbhe_hooligans_sync');
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStateFromStorage();
+      lucide.createIcons();
+      handleAngkatanChange('29');
+      updateBuyerPortalDisplay();
+
+      // Listen for BroadcastChannel updates across tabs
+      syncChannel.onmessage = (event) => {
+        if (event.data && event.data.type === 'STATE_UPDATED') {
+          loadStateFromStorage();
+          updateBuyerPortalDisplay();
+          if (activePortal === 'admin') renderAdminDashboard();
+          showToast('Data diperbarui secara realtime dari tab lain!', 'info');
+        }
+      };
+
+      // Storage event fallback
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'patbhe_settings_v2' || e.key === 'patbhe_orders_v2') {
+          loadStateFromStorage();
+          updateBuyerPortalDisplay();
+          if (activePortal === 'admin') renderAdminDashboard();
+          showToast('Data diperbarui secara realtime!', 'info');
+        }
+      });
+    });
+
+    function loadStateFromStorage() {
+      const storedSettings = localStorage.getItem('patbhe_settings_v2');
+      appSettings = storedSettings ? JSON.parse(storedSettings) : { ...DEFAULT_SETTINGS };
+      if (!storedSettings) localStorage.setItem('patbhe_settings_v2', JSON.stringify(appSettings));
+
+      const storedOrders = localStorage.getItem('patbhe_orders_v2');
+      ticketOrders = storedOrders ? JSON.parse(storedOrders) : [ ...SEED_ORDERS ];
+      if (!storedOrders) localStorage.setItem('patbhe_orders_v2', JSON.stringify(ticketOrders));
+    }
+
+    function saveOrdersToStorage() {
+      localStorage.setItem('patbhe_orders_v2', JSON.stringify(ticketOrders));
+      syncChannel.postMessage({ type: 'STATE_UPDATED' });
+    }
+
+    function saveSettingsToStorage() {
+      localStorage.setItem('patbhe_settings_v2', JSON.stringify(appSettings));
+      syncChannel.postMessage({ type: 'STATE_UPDATED' });
+    }
+
+    function formatIDR(num) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
+    }
+
+    function updateBuyerPortalDisplay() {
+      document.getElementById('buyer-match-title').innerText = appSettings.matchTitle;
+      document.getElementById('buyer-match-date').innerText = appSettings.matchDate;
+      document.getElementById('buyer-match-time').innerText = appSettings.matchTime;
+      document.getElementById('buyer-match-location').innerText = appSettings.matchLocation;
+      document.getElementById('buyer-ticket-price-display').innerText = `${formatIDR(appSettings.ticketPrice)} / Tiket`;
+      document.getElementById('qris-nominal-text').innerText = formatIDR(appSettings.ticketPrice);
+      document.getElementById('qris-barcode-img').src = appSettings.qrisImage;
+      document.getElementById('setting-qris-preview').src = appSettings.qrisImage;
+    }
+
+    function handleAngkatanChange(angkatan) {
+      const selectKelas = document.getElementById('buyer-input-kelas');
+      const hintText = document.getElementById('kelas-hint-text');
+
+      let optionsHTML = '';
+
+      if (angkatan === '29') {
+        hintText.innerText = 'Angkatan 29: Tersedia E1-E8 & F1-F8';
+        for (let i = 1; i <= 8; i++) optionsHTML += `<option value="E${i}">Kelas E${i}</option>`;
+        for (let i = 1; i <= 8; i++) optionsHTML += `<option value="F${i}">Kelas F${i}</option>`;
+      } else {
+        hintText.innerText = `Angkatan ${angkatan}: Tersedia F1-F8`;
+        for (let i = 1; i <= 8; i++) optionsHTML += `<option value="F${i}">Kelas F${i}</option>`;
+      }
+
+      selectKelas.innerHTML = optionsHTML;
+    }
+
+    function togglePaymentTab(method) {
+      currentPaymentMethod = method;
+      const qrisPanel = document.getElementById('panel-qris-details');
+      const cashPanel = document.getElementById('panel-cash-details');
+      const btnSubmitText = document.getElementById('btn-submit-text');
+
+      if (method === 'QRIS') {
+        qrisPanel.classList.remove('hidden');
+        cashPanel.classList.add('hidden');
+        btnSubmitText.innerText = 'Konfirmasi Pembayaran QRIS & Terbitkan Tiket';
+      } else {
+        qrisPanel.classList.add('hidden');
+        cashPanel.classList.remove('hidden');
+        btnSubmitText.innerText = 'Pesan Tiket Cash (Bayar di Panitia)';
+      }
+    }
+
+    function handleTicketBooking(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('buyer-input-name').value.trim();
+      const angkatan = document.querySelector('input[name="input_angkatan"]:checked').value;
+      const kelas = document.getElementById('buyer-input-kelas').value;
+
+      if (!name) {
+        showToast('Mohon masukkan nama lengkap Anda.', 'warning');
+        return;
+      }
+
+      const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const bookingCode = `PTH-2026-${randomSuffix}`;
+      const statusBayar = (currentPaymentMethod === 'QRIS') ? 'Sudah Bayar' : 'Belum Bayar';
+
+      const newOrder = {
+        id: bookingCode,
+        name: name,
+        angkatan: angkatan,
+        kelas: kelas,
+        paymentMethod: currentPaymentMethod,
+        paymentStatus: statusBayar,
+        price: appSettings.ticketPrice,
+        createdAt: new Date().toISOString()
+      };
+
+      ticketOrders.unshift(newOrder);
+      saveOrdersToStorage();
+
+      document.getElementById('buyer-input-name').value = '';
+      showToast(`Pesanan Berhasil! Kode Booking: ${bookingCode}`, 'success');
+
+      displayETicketPass(newOrder);
+    }
+
+    function displayETicketPass(order) {
+      document.getElementById('ticket-pass-match').innerText = appSettings.matchTitle;
+      document.getElementById('ticket-pass-date').innerText = appSettings.matchDate;
+      document.getElementById('ticket-pass-code').innerText = order.id;
+      document.getElementById('ticket-pass-name').innerText = order.name;
+      document.getElementById('ticket-pass-angkatan').innerText = `Angkatan ${order.angkatan}`;
+      document.getElementById('ticket-pass-kelas').innerText = `${order.angkatan}-${order.kelas}`;
+      document.getElementById('ticket-pass-payment').innerText = order.paymentMethod;
+
+      const badge = document.getElementById('ticket-pass-status-badge');
+      if (order.paymentStatus === 'Sudah Bayar') {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+        badge.innerText = 'SUDAH BAYAR (LUNAS)';
+      } else {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        badge.innerText = 'BELUM BAYAR (CASH)';
+      }
+
+      document.getElementById('modal-eticket').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeETicketModal() {
+      document.getElementById('modal-eticket').classList.add('hidden');
+    }
+
+    function openGuideModal() {
+      document.getElementById('modal-guide').classList.remove('hidden');
+    }
+
+    function closeGuideModal() {
+      document.getElementById('modal-guide').classList.add('hidden');
+    }
+
+    function switchPortal(portal) {
+      activePortal = portal;
+      const navBuyer = document.getElementById('nav-buyer');
+      const navAdmin = document.getElementById('nav-admin');
+      const portalBuyer = document.getElementById('portal-buyer');
+      const portalAdmin = document.getElementById('portal-admin');
+
+      if (portal === 'buyer') {
+        portalBuyer.classList.remove('hidden');
+        portalAdmin.classList.add('hidden');
+        navBuyer.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gold-500 text-black shadow-md shadow-gold-500/20';
+        navAdmin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-gold-400 hover:bg-obsidian-800';
+      } else {
+        portalBuyer.classList.add('hidden');
+        portalAdmin.classList.remove('hidden');
+        navAdmin.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition bg-gold-500 text-black shadow-md shadow-gold-500/20';
+        navBuyer.className = 'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition text-slate-400 hover:text-gold-400 hover:bg-obsidian-800';
+        renderAdminDashboard();
+      }
+    }
+
+    function openAdminAccessModal() {
+      document.getElementById('modal-admin-pin').classList.remove('hidden');
+    }
+
+    function closeAdminPinModal() {
+      document.getElementById('modal-admin-pin').classList.add('hidden');
+    }
+
+    function verifyAdminPIN(e) {
+      e.preventDefault();
+      const pinInput = document.getElementById('admin-pin-input').value.trim();
+      const validPin = appSettings.adminPin || '1950';
+
+      if (pinInput === validPin) {
+        closeAdminPinModal();
+        document.getElementById('admin-pin-input').value = '';
+        switchPortal('admin');
+        showToast('Login Dashboard Admin Berhasil!', 'success');
+      } else {
+        showToast('PIN Admin salah! Default: 1950', 'danger');
+      }
+    }
+
+    function renderAdminDashboard() {
+      calculateAdminStats();
+      renderCashPendingTable();
+      renderCashPaidTable();
+      renderGroupedAnalytics();
+      populateSettingsForm();
+    }
+
+    function calculateAdminStats() {
+      const totalTickets = ticketOrders.length;
+      const paidOrders = ticketOrders.filter(o => o.paymentStatus === 'Sudah Bayar');
+      const totalRevenue = paidOrders.reduce((acc, o) => acc + (o.price || 35000), 0);
+
+      const cashPendingCount = ticketOrders.filter(o => o.paymentMethod === 'CASH' && o.paymentStatus === 'Belum Bayar').length;
+      const cashPaidCount = ticketOrders.filter(o => o.paymentMethod === 'CASH' && o.paymentStatus === 'Sudah Bayar').length;
+      const qrisPaidCount = ticketOrders.filter(o => o.paymentMethod === 'QRIS' && o.paymentStatus === 'Sudah Bayar').length;
+
+      document.getElementById('stat-total-tickets').innerText = totalTickets;
+      document.getElementById('stat-total-revenue').innerText = formatIDR(totalRevenue);
+      document.getElementById('stat-cash-pending').innerText = cashPendingCount;
+      document.getElementById('stat-cash-paid').innerText = cashPaidCount;
+      document.getElementById('stat-qris-paid').innerText = qrisPaidCount;
+    }
+
+    function switchAdminTab(tabName) {
+      const tabs = ['cash-pending', 'cash-paid', 'analytics', 'settings'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const panel = document.getElementById(`admin-tab-${t}`);
+
+        if (t === tabName) {
+          btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-gold-500 text-black shadow-md flex items-center gap-2 shrink-0';
+          panel.classList.remove('hidden');
+        } else {
+          btn.className = 'px-5 py-2.5 rounded-xl text-xs font-bold transition bg-obsidian-900 text-slate-400 hover:text-white flex items-center gap-2 shrink-0';
+          panel.classList.add('hidden');
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function renderCashPendingTable() {
+      const tbody = document.getElementById('table-pending-tbody');
+      const search = document.getElementById('search-pending-input').value.toLowerCase().trim();
+
+      const pendingOrders = ticketOrders.filter(o => {
+        const isPendingCash = (o.paymentMethod === 'CASH' && o.paymentStatus === 'Belum Bayar');
+        const matchesSearch = o.name.toLowerCase().includes(search) || o.kelas.toLowerCase().includes(search) || o.id.toLowerCase().includes(search);
+        return isPendingCash && matchesSearch;
+      });
+
+      if (pendingOrders.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">Tidak ada pesanan cash yang pending.</td></tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = pendingOrders.map(o => `
+        <tr class="hover:bg-obsidian-950/50 transition">
+          <td class="p-4">
+            <button onclick="toggleCashPaidStatus('${o.id}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500 hover:text-black font-extrabold text-xs flex items-center gap-1.5 transition">
+              <i data-lucide="check-square" class="w-4 h-4"></i> Centang: Sudah Bayar
+            </button>
+          </td>
+          <td class="p-4 font-mono font-bold text-gold-400">${o.id}</td>
+          <td class="p-4 font-bold text-white">${o.name}</td>
+          <td class="p-4 font-bold text-slate-200">${o.angkatan}-${o.kelas}</td>
+          <td class="p-4 text-slate-400">Angkatan ${o.angkatan}</td>
+          <td class="p-4 text-slate-400 text-[11px]">${new Date(o.createdAt).toLocaleDateString('id-ID')}</td>
+          <td class="p-4 flex items-center gap-2">
+            <button onclick="displayETicketPassByID('${o.id}')" class="px-2.5 py-1 rounded-lg bg-obsidian-800 text-gold-400 font-bold text-[10px]">Pass</button>
+            <button onclick="promptDeleteOrder('${o.id}')" class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-bold text-[10px]">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function renderCashPaidTable() {
+      const tbody = document.getElementById('table-paid-tbody');
+      const search = document.getElementById('search-paid-input').value.toLowerCase().trim();
+
+      const paidOrders = ticketOrders.filter(o => {
+        const isPaid = o.paymentStatus === 'Sudah Bayar';
+        const matchesSearch = o.name.toLowerCase().includes(search) || o.kelas.toLowerCase().includes(search) || o.id.toLowerCase().includes(search);
+        return isPaid && matchesSearch;
+      });
+
+      if (paidOrders.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">Belum ada pesanan lunas.</td></tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = paidOrders.map(o => `
+        <tr class="hover:bg-obsidian-950/50 transition">
+          <td class="p-4 font-mono font-bold text-gold-400">${o.id}</td>
+          <td class="p-4 font-bold text-white">${o.name}</td>
+          <td class="p-4 font-bold text-slate-200">${o.angkatan}-${o.kelas}</td>
+          <td class="p-4 text-slate-400">Angkatan ${o.angkatan}</td>
+          <td class="p-4 font-bold text-slate-300">${o.paymentMethod}</td>
+          <td class="p-4">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">LUNAS</span>
+          </td>
+          <td class="p-4 flex items-center gap-2">
+            <button onclick="displayETicketPassByID('${o.id}')" class="px-2.5 py-1 rounded-lg bg-obsidian-800 text-gold-400 font-bold text-[10px]">Pass</button>
+            <button onclick="promptDeleteOrder('${o.id}')" class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-bold text-[10px]">Hapus</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleCashPaidStatus(orderId) {
+      const order = ticketOrders.find(o => o.id === orderId);
+      if (order) {
+        order.paymentStatus = 'Sudah Bayar';
+        saveOrdersToStorage();
+        renderAdminDashboard();
+        showToast(`Pembayaran ${order.name} dicentang LUNAS!`, 'success');
+      }
+    }
+
+    function promptDeleteOrder(orderId) {
+      const order = ticketOrders.find(o => o.id === orderId);
+      if (!order) return;
+
+      document.getElementById('confirm-title').innerText = 'Hapus Pesanan Tiket';
+      document.getElementById('confirm-msg').innerText = `Apakah Anda yakin ingin menghapus tiket ${order.name} (${order.id})?`;
+
+      const modal = document.getElementById('modal-confirm');
+      modal.classList.remove('hidden');
+
+      document.getElementById('btn-confirm-cancel').onclick = () => modal.classList.add('hidden');
+      document.getElementById('btn-confirm-ok').onclick = () => {
+        ticketOrders = ticketOrders.filter(o => o.id !== orderId);
+        saveOrdersToStorage();
+        renderAdminDashboard();
+        modal.classList.add('hidden');
+        showToast('Data tiket telah dihapus.', 'info');
+      };
+    }
+
+    function displayETicketPassByID(id) {
+      const order = ticketOrders.find(o => o.id === id);
+      if (order) displayETicketPass(order);
+    }
+
+    function renderGroupedAnalytics() {
+      const ang29 = ticketOrders.filter(o => o.angkatan === '29');
+      const ang28 = ticketOrders.filter(o => o.angkatan === '28');
+      const ang27 = ticketOrders.filter(o => o.angkatan === '27');
+
+      document.getElementById('badge-count-ang-29').innerText = `${ang29.length} Tiket`;
+      document.getElementById('badge-count-ang-28').innerText = `${ang28.length} Tiket`;
+      document.getElementById('badge-count-ang-27').innerText = `${ang27.length} Tiket`;
+
+      renderClassesForAngkatan('29', ang29, document.getElementById('group-container-29'));
+      renderClassesForAngkatan('28', ang28, document.getElementById('group-container-28'));
+      renderClassesForAngkatan('27', ang27, document.getElementById('group-container-27'));
+    }
+
+    function renderClassesForAngkatan(angkatanNum, orderList, containerEl) {
+      let classKeys = (angkatanNum === '29') ? 
+        ['E1','E2','E3','E4','E5','E6','E7','E8','F1','F2','F3','F4','F5','F6','F7','F8'] :
+        ['F1','F2','F3','F4','F5','F6','F7','F8'];
+
+      containerEl.innerHTML = classKeys.map(cls => {
+        const inClass = orderList.filter(o => o.kelas === cls);
+        
+        return `
+          <div class="bg-obsidian-950 border border-obsidian-800 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between border-b border-obsidian-800 pb-2">
+              <span class="font-extrabold text-xs text-gold-400 font-mono">KELAS ${angkatanNum}-${cls}</span>
+              <span class="text-[10px] bg-obsidian-800 text-slate-300 px-2 py-0.5 rounded-full font-bold">${inClass.length} Pemesan</span>
+            </div>
+
+            ${inClass.length === 0 ? `
+              <p class="text-[11px] text-slate-600 italic">Belum ada pemesan</p>
+            ` : `
+              <ul class="space-y-1.5 text-xs">
+                ${inClass.map(item => `
+                  <li class="flex items-center justify-between bg-obsidian-900 p-2 rounded-xl border border-obsidian-800">
+                    <span class="font-bold text-slate-200">
+                      ${item.name} - ${item.kelas} - Angkatan ${item.angkatan}
+                    </span>
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${item.paymentStatus === 'Sudah Bayar' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                      ${item.paymentMethod}
+                    </span>
+                  </li>
+                `).join('')}
+              </ul>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copyFormattedWhatsAppText() {
+      let waText = `*REKAP TIKET PATBHE HOOLIGANS*\n`;
+      waText += `Match: ${appSettings.matchTitle}\n`;
+      waText += `Total Terjual: ${ticketOrders.length} Tiket\n\n`;
+
+      ['29', '28', '27'].forEach(ang => {
+        const angOrders = ticketOrders.filter(o => o.angkatan === ang);
+        waText += `*ANGKATAN ${ang} (${angOrders.length} Tiket)*\n`;
+
+        let classKeys = (ang === '29') ? 
+          ['E1','E2','E3','E4','E5','E6','E7','E8','F1','F2','F3','F4','F5','F6','F7','F8'] :
+          ['F1','F2','F3','F4','F5','F6','F7','F8'];
+
+        classKeys.forEach(cls => {
+          const inClass = angOrders.filter(o => o.kelas === cls);
+          if (inClass.length > 0) {
+            waText += `📌 Kelas ${ang}-${cls}:\n`;
+            inClass.forEach((item, idx) => {
+              waText += `  ${idx + 1}. ${item.name} (${item.kelas}) (${item.angkatan}) - ${item.paymentMethod} [${item.paymentStatus}]\n`;
+            });
+          }
+        });
+        waText += `\n`;
+      });
+
+      copyToClipboardFallback(waText);
+      showToast('Format WhatsApp berhasil disalin ke clipboard!', 'success');
+    }
+
+    function copyToClipboardFallback(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+      } catch (err) {
+        console.error('Copy fallback error:', err);
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function populateSettingsForm() {
+      document.getElementById('setting-match-title').value = appSettings.matchTitle;
+      document.getElementById('setting-match-date').value = appSettings.matchDate;
+      document.getElementById('setting-match-time').value = appSettings.matchTime;
+      document.getElementById('setting-match-location').value = appSettings.matchLocation;
+      document.getElementById('setting-ticket-price').value = appSettings.ticketPrice;
+      document.getElementById('setting-admin-pin').value = appSettings.adminPin || '1950';
+      document.getElementById('setting-qris-preview').src = appSettings.qrisImage;
+    }
+
+    function handleQRISFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const dataUrl = e.target.result;
+          document.getElementById('setting-qris-preview').src = dataUrl;
+          appSettings.qrisImage = dataUrl;
+          saveSettingsToStorage();
+          updateBuyerPortalDisplay();
+          showToast('Gambar QRIS baru berhasil diunggah!', 'success');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function saveEventSettings(e) {
+      e.preventDefault();
+      appSettings.matchTitle = document.getElementById('setting-match-title').value.trim();
+      appSettings.matchDate = document.getElementById('setting-match-date').value.trim();
+      appSettings.matchTime = document.getElementById('setting-match-time').value.trim();
+      appSettings.matchLocation = document.getElementById('setting-match-location').value.trim();
+      appSettings.ticketPrice = parseInt(document.getElementById('setting-ticket-price').value) || 35000;
+      appSettings.adminPin = document.getElementById('setting-admin-pin').value.trim() || '1950';
+
+      saveSettingsToStorage();
+      updateBuyerPortalDisplay();
+      showToast('Pengaturan Match & Admin berhasil disimpan!', 'success');
+    }
+
+    function exportDataToCSV() {
+      if (ticketOrders.length === 0) {
+        showToast('Belum ada data untuk diekspor.', 'warning');
+        return;
+      }
+
+      let csv = "Kode Booking,Nama Pemesan,Angkatan,Kelas,Metode,Status Bayar,Harga,Tanggal\n";
+      ticketOrders.forEach(o => {
+        csv += `"${o.id}","${o.name}","Angkatan ${o.angkatan}","${o.angkatan}-${o.kelas}","${o.paymentMethod}","${o.paymentStatus}","${o.price}","${o.createdAt}"\n`;
+      });
+
+      const uri = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+      const link = document.createElement("a");
+      link.href = uri;
+      link.download = `Data_Tiket_Patbhe_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('File CSV berhasil diunduh.', 'success');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      let bgClass = 'bg-obsidian-900 border-obsidian-700 text-slate-100';
+      if (type === 'success') bgClass = 'bg-emerald-950 border-emerald-500 text-emerald-200';
+      if (type === 'warning') bgClass = 'bg-amber-950 border-amber-500 text-amber-200';
+      if (type === 'danger') bgClass = 'bg-rose-950 border-rose-500 text-rose-200';
+
+      toast.className = `pointer-events-auto border rounded-2xl p-4 shadow-2xl text-xs sm:text-sm font-medium flex items-center gap-3 transition-all transform translate-y-2 opacity-0 duration-300 backdrop-blur-md max-w-sm ${bgClass}`;
+      toast.innerHTML = `<i data-lucide="info" class="w-5 h-5 shrink-0"></i><span class="flex-1">${message}</span>`;
+
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
